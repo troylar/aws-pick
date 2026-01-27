@@ -1,6 +1,6 @@
 """aws-pick - Interactive TUI and Python library for selecting AWS account/role credentials."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from aws_pick.core.favorites import manage_favorites
 from aws_pick.core.presets import manage_presets
