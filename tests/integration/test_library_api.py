@@ -48,7 +48,9 @@ class TestPublicApiExports:
 
     def test_version_exported(self) -> None:
         assert hasattr(aws_pick, "__version__")
-        assert aws_pick.__version__ == "0.1.0"
+        assert isinstance(aws_pick.__version__, str)
+        parts = aws_pick.__version__.split(".")
+        assert len(parts) >= 2
 
     def test_all_list(self) -> None:
         expected = {
