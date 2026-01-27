@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aws-pick"
+version = "0.1.0"
+description = "CLI and TUI tool for selecting AWS account/role credentials"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "textual>=0.40",
+    "typer>=0.9",
+    "rich>=13.0",
+    "platformdirs>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "textual-dev>=1.0",
+    "mypy>=1.0",
+    "black>=23.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+aws-pick = "aws_pick.cli.app:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aws_pick"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+strict = true
+disallow_untyped_defs = true
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "src"
+packages = ["aws_pick"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.coverage.run]
+source = ["aws_pick"]
+
+[tool.coverage.report]
+fail_under = 80

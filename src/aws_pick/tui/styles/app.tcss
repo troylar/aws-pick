@@ -1,0 +1,55 @@
+/* aws-pick TUI Stylesheet */
+
+SelectorScreen {
+    align: center middle;
+}
+
+/* Centered panel - auto-sizes vertically to content */
+#panel {
+    width: 56;
+    height: auto;
+    max-height: 90%;
+    background: $surface;
+    border: tall $primary;
+    padding: 1 2;
+}
+
+#panel-title {
+    text-align: center;
+    text-style: bold;
+    width: 100%;
+    color: $accent;
+}
+
+#panel-hint {
+    text-align: center;
+    color: $text-muted;
+    width: 100%;
+    margin-bottom: 1;
+}
+
+/* Filter bar */
+FilterBar {
+    margin-bottom: 1;
+}
+
+/* Account list auto-sizes up to a cap, then scrolls */
+AccountList {
+    height: auto;
+    max-height: 32;
+}
+
+#account-option-list {
+    height: auto;
+    max-height: 30;
+    scrollbar-gutter: stable;
+    border: none;
+}
+
+/* Status bar pinned to bottom of panel */
+StatusBar {
+    dock: bottom;
+    height: 1;
+    color: $text-muted;
+    text-align: center;
+}
