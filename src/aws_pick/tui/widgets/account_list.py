@@ -11,7 +11,7 @@ from textual import on
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
-from textual.widgets import OptionList
+from textual.widgets import OptionList, Static
 from textual.widgets.option_list import Option
 
 from aws_pick.core.environment import classify
@@ -88,6 +88,8 @@ class AccountList(Widget):
         if self._fav_mgr:
             for fav in self._fav_mgr.list():
                 self._favorite_keys.add((fav.account_id, fav.role_name))
+        self._item_to_header: dict[str, str] = {}
+        self._current_header: str = ""
 
     @property
     def grouping_mode(self) -> GroupingMode:
@@ -99,6 +101,7 @@ class AccountList(Widget):
         return [item for item in self._all_items if item.key in self._selected_keys]
 
     def compose(self) -> object:  # type: ignore[override]
+        yield Static("", id="sticky-header")
         yield OptionList(id="account-option-list")
 
     def on_mount(self) -> None:
@@ -117,6 +120,7 @@ class AccountList(Widget):
         prev_highlight = option_list.highlighted
         option_list.clear_options()
         self._option_key_map.clear()
+        self._item_to_header.clear()
 
         fav_items = [item for item in self._visible_items if item.key in self._favorite_keys]
         non_fav_items = [item for item in self._visible_items if item.key not in self._favorite_keys]
@@ -136,13 +140,18 @@ class AccountList(Widget):
         if prev_highlight is not None and option_list.option_count > 0:
             option_list.highlighted = min(prev_highlight, option_list.option_count - 1)
 
+        self._update_sticky_header()
+
     def _render_favorites_section(self, option_list: OptionList, fav_items: list[AccountRole]) -> None:
         """Render the favorites group at the top."""
         header_text = Text("  ")
         header_text.append("★", style="bold yellow")
         header_text.append(" Favorites", style="bold")
         option_list.add_option(Option(header_text, id="header:favorites", disabled=True))
+        header_display = "★ Favorites"
         for ar in sorted(fav_items, key=lambda r: f"{r.account.account_name}/{r.role.role_name}"):
+            key_str = f"{ar.account.account_id}:{ar.role.role_name}"
+            self._item_to_header[key_str] = header_display
             self._add_item_option(
                 option_list, ar, label=f"{ar.account.account_name} / {ar.role.role_name}", is_fav=True
             )
@@ -163,11 +172,16 @@ class AccountList(Widget):
             env_info = classify(roles[0].account)
             header_text = Text("  ")
             header_text.append(account_name, style="bold")
+            env_suffix = ""
             if env_info:
-                header_text.append(f"  {env_info.environment}", style=_env_style(env_info.environment))
+                env_suffix = f"  {env_info.environment}"
+                header_text.append(env_suffix, style=_env_style(env_info.environment))
             option_list.add_option(Option(header_text, id=f"header:{account_name}", disabled=True))
 
+            header_display = account_name + (f"  {env_info.environment}" if env_info else "")
             for ar in sorted(roles, key=lambda r: r.role.role_name):
+                key_str = f"{ar.account.account_id}:{ar.role.role_name}"
+                self._item_to_header[key_str] = header_display
                 self._add_item_option(option_list, ar, label=ar.role.role_name, show_env_tag=False)
 
     def _render_by_role(self, option_list: OptionList, items: list[AccountRole] | None = None) -> None:
@@ -188,6 +202,8 @@ class AccountList(Widget):
             option_list.add_option(Option(header_text, id=f"header:{role_name}", disabled=True))
 
             for ar in sorted(role_items, key=lambda r: r.account.account_name):
+                key_str = f"{ar.account.account_id}:{ar.role.role_name}"
+                self._item_to_header[key_str] = role_name
                 self._add_item_option(option_list, ar, label=ar.account.account_name)
 
     def _render_flat(self, option_list: OptionList, items: list[AccountRole] | None = None) -> None:
@@ -195,6 +211,8 @@ class AccountList(Widget):
         source = items if items is not None else self._visible_items
         sorted_items = sorted(source, key=lambda ar: f"{ar.account.account_name}/{ar.role.role_name}")
         for ar in sorted_items:
+            key_str = f"{ar.account.account_id}:{ar.role.role_name}"
+            self._item_to_header[key_str] = ""
             self._add_item_option(option_list, ar, label=f"{ar.account.account_name} / {ar.role.role_name}")
 
     def _add_item_option(
@@ -228,6 +246,50 @@ class AccountList(Widget):
             line.stylize("bold cyan")
         option_list.add_option(Option(line, id=key_str))
         self._option_key_map[key_str] = ar
+
+    def _update_sticky_header(self) -> None:
+        """Update the sticky header based on the currently highlighted item."""
+        try:
+            sticky = self.query_one("#sticky-header", Static)
+        except Exception:
+            return
+
+        option_list = self.query_one("#account-option-list", OptionList)
+        if option_list.highlighted is None or option_list.option_count == 0:
+            sticky.update("")
+            self._current_header = ""
+            return
+
+        option = option_list.get_option_at_index(option_list.highlighted)
+        if option.id is None:
+            return
+
+        if option.id.startswith("header:"):
+            header_name = option.id[7:]
+            if header_name == "favorites":
+                header_display = "★ Favorites"
+            else:
+                header_display = header_name
+        else:
+            header_display = self._item_to_header.get(option.id, "")
+
+        if header_display and header_display != self._current_header:
+            self._current_header = header_display
+            header_text = Text("  ")
+            if header_display.startswith("★"):
+                header_text.append("★", style="bold yellow")
+                header_text.append(header_display[1:], style="bold")
+            else:
+                header_text.append(header_display, style="bold cyan")
+            sticky.update(header_text)
+        elif not header_display:
+            sticky.update("")
+            self._current_header = ""
+
+    @on(OptionList.OptionHighlighted)
+    def _on_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
+        """Update sticky header when highlight changes."""
+        self._update_sticky_header()
 
     @on(OptionList.OptionSelected)
     def _on_option_selected(self, event: OptionList.OptionSelected) -> None:

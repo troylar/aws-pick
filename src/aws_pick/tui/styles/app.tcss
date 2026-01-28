@@ -26,6 +26,14 @@ FilterBar {
     margin-bottom: 1;
 }
 
+/* Sticky header for current group */
+#sticky-header {
+    height: auto;
+    max-height: 1;
+    background: $surface-darken-1;
+    padding: 0 0;
+}
+
 /* Account list auto-sizes up to a cap, then scrolls */
 AccountList {
     height: auto;
