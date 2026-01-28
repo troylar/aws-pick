@@ -8,7 +8,6 @@ from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical
-from textual.events import Key
 from textual.screen import Screen
 from textual.widgets import OptionList, Static
 
@@ -128,19 +127,6 @@ class SelectorScreen(Screen[list[AccountRole] | None]):
 
     def action_focus_filter(self) -> None:
         self.query_one(FilterBar).focus()
-
-    def on_key(self, event: Key) -> None:
-        """Forward alphanumeric keys to filter bar for typeahead search."""
-        filter_bar = self.query_one(FilterBar)
-        if filter_bar.has_focus:
-            return
-        reserved_keys = {"a", "d", "f", "g", "s", "l", "F"}
-        if event.character and event.character.isalnum() and event.character not in reserved_keys:
-            filter_bar.focus()
-            filter_bar.value = event.character
-            filter_bar.cursor_position = len(filter_bar.value)
-            event.prevent_default()
-            event.stop()
 
     def action_toggle_focus(self) -> None:
         filter_bar = self.query_one(FilterBar)
