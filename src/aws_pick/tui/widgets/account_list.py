@@ -138,7 +138,9 @@ class AccountList(Widget):
 
     def _render_favorites_section(self, option_list: OptionList, fav_items: list[AccountRole]) -> None:
         """Render the favorites group at the top."""
-        header_text = Text("  ★ Favorites", style="bold yellow")
+        header_text = Text("  ")
+        header_text.append("★", style="bold yellow")
+        header_text.append(" Favorites", style="bold")
         option_list.add_option(Option(header_text, id="header:favorites", disabled=True))
         for ar in sorted(fav_items, key=lambda r: f"{r.account.account_name}/{r.role.role_name}"):
             self._add_item_option(
@@ -159,9 +161,10 @@ class AccountList(Widget):
             first_group = False
 
             env_info = classify(roles[0].account)
-            header_text = Text(f"  {account_name}", style="bold")
+            header_text = Text("  ")
+            header_text.append(account_name, style="bold")
             if env_info:
-                header_text.append(f" [{env_info.environment}]", style=_env_style(env_info.environment))
+                header_text.append(f"  {env_info.environment}", style=_env_style(env_info.environment))
             option_list.add_option(Option(header_text, id=f"header:{account_name}", disabled=True))
 
             for ar in sorted(roles, key=lambda r: r.role.role_name):
@@ -180,7 +183,8 @@ class AccountList(Widget):
                 option_list.add_option(Option(Text(""), disabled=True))
             first_group = False
 
-            header_text = Text(f"  {role_name}", style="bold")
+            header_text = Text("  ")
+            header_text.append(role_name, style="bold")
             option_list.add_option(Option(header_text, id=f"header:{role_name}", disabled=True))
 
             for ar in sorted(role_items, key=lambda r: r.account.account_name):
