@@ -4,13 +4,12 @@ SelectorScreen {
     align: center middle;
 }
 
-/* Centered panel - auto-sizes vertically to content */
 #panel {
-    width: 56;
+    width: 60;
     height: auto;
     max-height: 90%;
     background: $surface;
-    border: tall $primary;
+    border: round $accent;
     padding: 1 2;
 }
 
@@ -18,13 +17,7 @@ SelectorScreen {
     text-align: center;
     text-style: bold;
     width: 100%;
-    color: $accent;
-}
-
-#panel-hint {
-    text-align: center;
-    color: $text-muted;
-    width: 100%;
+    color: $text;
     margin-bottom: 1;
 }
 
@@ -50,6 +43,7 @@ AccountList {
 StatusBar {
     dock: bottom;
     height: 1;
-    color: $text-muted;
+    background: $surface-darken-1;
     text-align: center;
+    margin-top: 1;
 }

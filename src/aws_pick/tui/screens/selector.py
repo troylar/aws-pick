@@ -63,14 +63,7 @@ class SelectorScreen(Screen[list[AccountRole] | None]):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="panel"):
-            yield Static(self._title, id="panel-title")
-            yield Static(
-                "[bold cyan]Space[/] [dim]toggle[/]  [dim]·[/]  "
-                "[bold cyan]Enter[/] [dim]confirm[/]  [dim]·[/]  "
-                "[bold cyan]Tab[/] [dim]filter[/]  [dim]·[/]  "
-                "[bold cyan]?[/] [dim]help[/]",
-                id="panel-hint",
-            )
+            yield Static(f"[bold cyan]{self._title}[/]", id="panel-title")
             yield FilterBar()
             yield AccountList(
                 self._items,
